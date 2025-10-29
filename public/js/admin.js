@@ -788,6 +788,7 @@ async function approvePurchaseFromAPI(notificationId, bookTitle, quantity) {
   }
 
   try {
+    console.log("[v0] Starting approval for notification:", notificationId)
     showNotification("Processing purchase approval...", "info")
 
     const response = await fetch(`/api/purchase-notifications/${notificationId}/approve`, {
@@ -800,17 +801,27 @@ async function approvePurchaseFromAPI(notificationId, bookTitle, quantity) {
       }),
     })
 
+    console.log("[v0] Approve response status:", response.status)
     const result = await response.json()
+    console.log("[v0] Approve response data:", result)
 
-    if (response.ok) {
-      showNotification(`Purchase approved! Stock updated successfully for "${bookTitle}"`, "success")
-      loadPurchaseNotifications()
-      loadInventory()
+    if (response.ok && result.success) {
+      console.log("[v0] Approval successful, updating UI")
+      showNotification(
+        `Purchase approved! Stock updated successfully for "${bookTitle}"\nStock: ${result.listing.newStock} remaining`,
+        "success",
+      )
+
+      // Reload both sections to reflect changes
+      setTimeout(() => {
+        loadPurchaseNotifications()
+        loadInventory()
+      }, 500)
     } else {
-      throw new Error(result.error || "Failed to approve purchase")
+      throw new Error(result.error || result.message || "Failed to approve purchase")
     }
   } catch (error) {
-    console.error("Error approving purchase:", error)
+    console.error("[v0] Error approving purchase:", error)
     showNotification(`Error approving purchase: ${error.message}`, "error")
   }
 }
@@ -820,6 +831,7 @@ async function rejectPurchaseFromAPI(notificationId, bookTitle) {
   if (!reason) return
 
   try {
+    console.log("[v0] Starting rejection for notification:", notificationId)
     showNotification("Processing rejection...", "info")
 
     const response = await fetch(`/api/purchase-notifications/${notificationId}/reject`, {
@@ -833,16 +845,22 @@ async function rejectPurchaseFromAPI(notificationId, bookTitle) {
       }),
     })
 
+    console.log("[v0] Reject response status:", response.status)
     const result = await response.json()
+    console.log("[v0] Reject response data:", result)
 
-    if (response.ok) {
+    if (response.ok && result.success) {
+      console.log("[v0] Rejection successful")
       showNotification(`Purchase rejected: ${reason}`, "warning")
-      loadPurchaseNotifications()
+
+      setTimeout(() => {
+        loadPurchaseNotifications()
+      }, 500)
     } else {
-      throw new Error(result.error || "Failed to reject purchase")
+      throw new Error(result.error || result.message || "Failed to reject purchase")
     }
   } catch (error) {
-    console.error("Error rejecting purchase:", error)
+    console.error("[v0] Error rejecting purchase:", error)
     showNotification(`Error rejecting purchase: ${error.message}`, "error")
   }
 }
@@ -853,22 +871,29 @@ async function deletePurchaseNotificationFromAPI(notificationId) {
   }
 
   try {
+    console.log("[v0] Starting deletion for notification:", notificationId)
     showNotification("Deleting notification...", "info")
 
     const response = await fetch(`/api/purchase-notifications/${notificationId}`, {
       method: "DELETE",
     })
 
+    console.log("[v0] Delete response status:", response.status)
     const result = await response.json()
+    console.log("[v0] Delete response data:", result)
 
-    if (response.ok) {
+    if (response.ok && result.success) {
+      console.log("[v0] Deletion successful")
       showNotification("Notification deleted successfully", "success")
-      loadPurchaseNotifications()
+
+      setTimeout(() => {
+        loadPurchaseNotifications()
+      }, 500)
     } else {
-      throw new Error(result.error || "Failed to delete notification")
+      throw new Error(result.error || result.message || "Failed to delete notification")
     }
   } catch (error) {
-    console.error("Error deleting notification:", error)
+    console.error("[v0] Error deleting notification:", error)
     showNotification(`Error deleting notification: ${error.message}`, "error")
   }
 }
@@ -1358,21 +1383,6 @@ notificationStyle.textContent = `
         font-size: 0.7rem;
         font-weight: bold;
         margin-left: 10px;
-    }
-    
-    .status-pending {
-        background: #f39c12;
-        color: white;
-    }
-    
-    .status-approved {
-        background: #27ae60;
-        color: white;
-    }
-    
-    .status-rejected {
-        background: #e74c3c;
-        color: white;
     }
     
     .proof-section {
