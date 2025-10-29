@@ -1,69 +1,353 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Report Purchase - BookTrade</title>
-    <link rel="stylesheet" href="css/styles.css">
-</head>
-<body>
-    <div class="container">
-        <div class="purchase-form-container">
-            <div class="form-header">
-                <h1> Report Your Purchase</h1>
-                <p>Let the admin know about your book purchase so the inventory can be updated.</p>
-            </div>
-            
-            <form id="purchaseNotificationForm" enctype="multipart/form-data">
-                <div class="form-section">
-                    <div class="form-group">
-                        <label for="bookTitle"> Book Title *</label>
-                        <input type="text" id="bookTitle" name="bookTitle" required 
-                               placeholder="Enter the book title exactly as shown">
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="bookAuthor"> Author Name *</label>
-                        <input type="text" id="bookAuthor" name="bookAuthor" required 
-                               placeholder="Enter the author's name">
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="quantityPurchased"> Quantity Purchased *</label>
-                        <input type="number" id="quantityPurchased" name="quantityPurchased" 
-                               min="1" max="10" required value="1"
-                               placeholder="How many copies did you buy?">
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="transactionProof"> Transaction Proof *</label>
-                        <input type="file" id="transactionProof" name="transactionProof" 
-                               accept="image/*" required>
-                        <small class="form-help">
-                            📸 Upload screenshot of your payment (UPI, Bank Transfer, etc.)
-                            <br>Accepted: JPG, PNG (Max: 5MB)
-                        </small>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="additionalNotes"> Additional Notes (Optional)</label>
-                        <textarea id="additionalNotes" name="additionalNotes" rows="3" 
-                                  placeholder="Any additional information about your purchase..."></textarea>
-                    </div>
-                </div>
-                
-                <div class="form-actions">
-                    <button type="submit" class="btn btn-primary btn-full">
-                         Submit Purchase Report
-                    </button>
-                    <a href="/" class="btn btn-secondary">
-                        ← Back to Home
-                    </a>
-                </div>
-            </form>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Report Purchase - PassMyBook</title>
+    <link rel="stylesheet" href="css/styles.css" />
+    <style>
+      .purchase-form-container {
+        max-width: 600px;
+        margin: 3rem auto;
+        background: rgba(255, 255, 255, 0.95);
+        padding: 2.5rem;
+        border-radius: 15px;
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+      }
+
+      .form-header {
+        text-align: center;
+        margin-bottom: 2rem;
+        color: #2c3e50;
+      }
+
+      .form-header h1 {
+        color: #2c3e50 !important;
+        margin-bottom: 0.5rem;
+        font-size: 2rem;
+      }
+
+      .form-header p {
+        color: #7f8c8d !important;
+        font-size: 1rem;
+      }
+
+      .form-section {
+        margin-bottom: 1.5rem;
+      }
+
+      .form-group {
+        margin-bottom: 1.5rem;
+      }
+
+      .form-group label {
+        display: block;
+        color: #2c3e50 !important;
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+        font-size: 0.95rem;
+      }
+
+      .form-group input,
+      .form-group textarea,
+      .form-group select {
+        width: 100%;
+        padding: 0.8rem;
+        border: 2px solid #ddd;
+        border-radius: 8px;
+        font-size: 1rem;
+        transition: all 0.3s ease;
+        color: #2c3e50;
+        background: white;
+      }
+
+      .form-group input:focus,
+      .form-group textarea:focus,
+      .form-group select:focus {
+        outline: none;
+        border-color: #3498db;
+        box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+      }
+
+      .form-help {
+        display: block;
+        margin-top: 0.5rem;
+        font-size: 0.85rem;
+        color: #7f8c8d !important;
+        line-height: 1.4;
+      }
+
+      .file-input-wrapper {
+        position: relative;
+        display: inline-block;
+        width: 100%;
+      }
+
+      .file-input-wrapper input[type="file"] {
+        position: absolute;
+        left: -9999px;
+      }
+
+      .file-input-label {
+        display: block;
+        padding: 1rem;
+        background: #f8f9fa;
+        border: 2px dashed #ddd;
+        border-radius: 8px;
+        text-align: center;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        color: #2c3e50 !important;
+      }
+
+      .file-input-label:hover {
+        background: #e9ecef;
+        border-color: #3498db;
+      }
+
+      .file-input-label.has-file {
+        background: #d1ecf1;
+        border-color: #3498db;
+        color: #0c5460 !important;
+      }
+
+      .file-preview {
+        margin-top: 1rem;
+        max-width: 100%;
+      }
+
+      .file-preview img {
+        max-width: 100%;
+        max-height: 200px;
+        border-radius: 8px;
+        border: 2px solid #ddd;
+      }
+
+      .form-actions {
+        display: flex;
+        gap: 1rem;
+        margin-top: 2rem;
+      }
+
+      .btn-full {
+        flex: 1;
+      }
+
+      .alert {
+        padding: 1rem;
+        border-radius: 8px;
+        margin-bottom: 1.5rem;
+        font-weight: 500;
+      }
+
+      .alert-success {
+        background: #d4edda;
+        color: #155724 !important;
+        border: 1px solid #c3e6cb;
+      }
+
+      .alert-error {
+        background: #f8d7da;
+        color: #721c24 !important;
+        border: 1px solid #f5c6cb;
+      }
+
+      .alert-info {
+        background: #d1ecf1;
+        color: #0c5460 !important;
+        border: 1px solid #bee5eb;
+      }
+
+      .loading-spinner {
+        display: inline-block;
+        width: 20px;
+        height: 20px;
+        border: 3px solid rgba(255, 255, 255, 0.3);
+        border-radius: 50%;
+        border-top-color: white;
+        animation: spin 1s ease-in-out infinite;
+      }
+
+      @keyframes spin {
+        to {
+          transform: rotate(360deg);
+        }
+      }
+
+      .char-count {
+        text-align: right;
+        font-size: 0.85rem;
+        color: #7f8c8d !important;
+        margin-top: 0.25rem;
+      }
+
+      .required-indicator {
+        color: #e74c3c;
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <div class="container">
+        <div class="header-content">
+          <a href="/" class="logo">PassMyBook</a>
+          <nav class="nav-links">
+            <a href="/">Home</a>
+            <a href="/cart.html" class="btn btn-secondary">Cart</a>
+          </nav>
         </div>
+      </div>
+    </header>
+
+    <div class="container">
+      <div class="purchase-form-container">
+        <div class="form-header">
+          <h1>Report Purchase</h1>
+          <p>Submit your purchase details so we can update the inventory</p>
+        </div>
+
+        <div id="alertContainer"></div>
+
+        <form id="purchaseNotificationForm" enctype="multipart/form-data">
+          <div class="form-section">
+            <div class="form-group">
+              <label for="bookSelect"
+                >Book <span class="required-indicator">*</span></label
+              >
+              <select id="bookSelect" name="bookSelect" required>
+                <option value="">Select a book...</option>
+              </select>
+            </div>
+
+            <input type="hidden" name="bookTitle" id="bookTitle" />
+            <input type="hidden" name="bookAuthor" id="bookAuthor" />
+
+            <div class="form-group">
+              <label for="quantityPurchased"
+                >Quantity <span class="required-indicator">*</span></label
+              >
+              <select id="quantityPurchased" name="quantityPurchased" required>
+                <option value="1">1</option>
+                <!-- Will be dynamically updated based on stock -->
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label for="buyerName">Buyer Name (Optional)</label>
+              <input
+                type="text"
+                id="buyerName"
+                name="buyerName"
+                maxlength="100"
+                placeholder="Your full name"
+              />
+            </div>
+
+            <div class="form-group">
+              <label for="buyerEmail">Email Address (Optional)</label>
+              <input
+                type="email"
+                id="buyerEmail"
+                name="buyerEmail"
+                placeholder="your.email@example.com"
+              />
+            </div>
+
+            <div class="form-group">
+              <label for="buyerPhone">Phone Number (Optional)</label>
+              <input
+                type="tel"
+                id="buyerPhone"
+                name="buyerPhone"
+                placeholder="+91 9876543210"
+              />
+            </div>
+
+            <div class="form-group">
+              <label for="amountPaid">Amount Paid (Optional)</label>
+              <input
+                type="number"
+                id="amountPaid"
+                name="amountPaid"
+                min="0"
+                step="0.01"
+                placeholder="Enter amount in rupees"
+              />
+            </div>
+
+            <div class="form-group">
+              <label for="paymentMethod">Payment Method (Optional)</label>
+              <select id="paymentMethod" name="paymentMethod">
+                <option value="UPI">UPI</option>
+                <option value="Bank Transfer">Bank Transfer</option>
+                <option value="Cash">Cash</option>
+                <option value="Other">Other</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label for="transactionProof">
+                Transaction Proof <span class="required-indicator">*</span>
+              </label>
+              <div class="file-input-wrapper">
+                <input
+                  type="file"
+                  id="transactionProof"
+                  name="transactionProof"
+                  accept="image/jpeg,image/jpg,image/png,image/webp"
+                  required
+                />
+                <label
+                  for="transactionProof"
+                  class="file-input-label"
+                  id="fileLabel"
+                >
+                  <div>Click to upload transaction proof</div>
+                  <small>Accepted formats: JPG, PNG, WebP (Max 5MB)</small>
+                </label>
+              </div>
+              <div id="filePreview" class="file-preview"></div>
+              <small class="form-help">
+                Upload a screenshot of your payment confirmation (UPI
+                transaction, bank transfer receipt, etc.)
+              </small>
+            </div>
+
+            <div class="form-group">
+              <label for="notes">Additional Notes (Optional)</label>
+              <textarea
+                id="notes"
+                name="notes"
+                rows="4"
+                maxlength="500"
+                placeholder="Any additional information about your purchase..."
+              ></textarea>
+              <div class="char-count">
+                <span id="charCount">0</span> / 500 characters
+              </div>
+            </div>
+          </div>
+
+          <div class="form-actions">
+            <button
+              type="submit"
+              class="btn btn-primary btn-full"
+              id="submitBtn"
+            >
+              Submit Purchase Report
+            </button>
+            <a href="/" class="btn btn-secondary">Back to Home</a>
+          </div>
+        </form>
+      </div>
     </div>
-    
+
+    <footer>
+      <div class="container">
+        <p>&copy; 2025 PassMyBook. All rights reserved.</p>
+      </div>
+    </footer>
+
     <script src="js/purchase-notification.js"></script>
-</body>
+  </body>
 </html>

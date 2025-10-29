@@ -12,6 +12,7 @@ const authRoutes = require('./routes/auth');
 const listingsRoutes = require('./routes/listings');
 const uploadsRoutes = require('./routes/uploads');
 const cartRoutes = require('./routes/cart');
+const purchaseNotificationsRoutes = require('./routes/purchaseNotifications');
 
 // Import your model (adjust the path/name according to your project)
 const Listing = require('./models/BookListing'); // or './models/Book' if that's what you use
@@ -46,6 +47,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/listings', listingsRoutes);
 app.use('/api/uploads', uploadsRoutes);
 app.use('/api/cart', cartRoutes);
+app.use("/api/purchase-notifications", purchaseNotificationsRoutes)
 
 // ADMIN STOCK UPDATE ENDPOINTS
 // Update stock quantity for a specific listing (PUT method)
