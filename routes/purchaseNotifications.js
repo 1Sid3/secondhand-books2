@@ -388,33 +388,28 @@ router.get("/:id", async (req, res) => {
 /**
  * PUT /api/purchase-notifications/:id/approve
  * Approve a purchase notification and update inventory
+ * Removed MongoDB transactions - not supported on standalone MongoDB instances
  */
 router.put("/:id/approve", async (req, res) => {
-  const session = await mongoose.startSession()
-  session.startTransaction()
-
   try {
-    const notification = await PurchaseNotification.findById(req.params.id).session(session)
+    const notification = await PurchaseNotification.findById(req.params.id)
 
     if (!notification) {
-      await session.abortTransaction()
       return res.status(404).json({
         error: "Purchase notification not found",
       })
     }
 
     if (notification.status !== "pending") {
-      await session.abortTransaction()
       return res.status(400).json({
         error: "Notification has already been processed",
         currentStatus: notification.status,
       })
     }
 
-    const listing = await BookListing.findById(notification.listingId).session(session)
+    const listing = await BookListing.findById(notification.listingId)
 
     if (!listing) {
-      await session.abortTransaction()
       return res.status(404).json({
         error: "Book listing not found",
       })
@@ -423,7 +418,6 @@ router.put("/:id/approve", async (req, res) => {
     // Validate current stock
     const currentStock = listing.quantity || 0
     if (currentStock < notification.quantity) {
-      await session.abortTransaction()
       return res.status(400).json({
         error: "Insufficient current stock",
         message: `Current stock (${currentStock}) is less than notification quantity (${notification.quantity})`,
@@ -435,16 +429,14 @@ router.put("/:id/approve", async (req, res) => {
     // Update book listing stock
     const newStock = currentStock - notification.quantity
     listing.quantity = newStock
-    await listing.save({ session })
+    await listing.save()
 
     // Update notification status
     notification.status = "approved"
     notification.processedAt = new Date()
     notification.processedBy = req.body.processedBy || "admin"
     notification.stockAfter = newStock
-    await notification.save({ session })
-
-    await session.commitTransaction()
+    await notification.save()
 
     res.json({
       success: true,
@@ -462,14 +454,11 @@ router.put("/:id/approve", async (req, res) => {
       },
     })
   } catch (error) {
-    await session.abortTransaction()
     console.error("Error approving purchase notification:", error)
     res.status(500).json({
       error: "Failed to approve purchase notification",
       message: error.message,
     })
-  } finally {
-    session.endSession()
   }
 })
 
