@@ -13,7 +13,7 @@
                 <a href="/" class="logo">PassMyBook</a>
                 <nav class="nav-links" id="navLinks">
                     <a href="/">Home</a>
-                    <a href="/cart.html" class="btn btn-secondary"> Cart (<span id="cartCount">0</span>)</a>
+                    <a href="/cart.html" class="btn btn-secondary">Cart (<span id="cartCount">0</span>)</a>
                     <a href="/login.html" id="loginLink">Login</a>
                     <span id="userInfo" style="display: none;">
                         Welcome, <span id="username"></span>!
@@ -26,116 +26,150 @@
 
     <main>
         <div class="container">
-            <div class="form-container sell-form">
-                <h2>Sell Your Book</h2>
-                <div id="errorMessage" class="error-message" style="display: none;"></div>
-                <div id="successMessage" class="success-message" style="display: none;"></div>
-                
-                <form id="sellForm" enctype="multipart/form-data">
-                    <div class="form-group">
-                        <label for="title">Book Title *:</label>
-                        <input type="text" id="title" name="title" class="form-control" required>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="author">Author *:</label>
-                        <input type="text" id="author" name="author" class="form-control" required>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="description">Description *:</label>
-                        <textarea id="description" name="description" class="form-control" required placeholder="Describe the book condition, why you're selling, etc."></textarea>
-                    </div>
-                    
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label for="condition">Condition *:</label>
-                            <select id="condition" name="condition" class="form-control" required>
-                                <option value="">Select condition</option>
-                                <option value="new">New</option>
-                                <option value="like-new">Like New</option>
-                                <option value="good">Good</option>
-                                <option value="fair">Fair</option>
-                            </select>
-                        </div>
-                        
-                        <div class="form-group">
-                            <label for="price">Price (₹) *:</label>
-                            <input type="number" id="price" name="price" class="form-control" min="1" required>
-                        </div>
-                    </div>
-                    
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label for="category">Category *:</label>
-                            <select id="category" name="category" class="form-control" required>
-                                <option value="">Select category</option>
-                                <option value="fiction">Fiction</option>
-                                <option value="non-fiction">Non-Fiction</option>
-                                <option value="academic">Academic</option>
-                                <option value="children">Children</option>
-                                <option value="comics">Comics</option>
-                                <option value="textbook">Textbook</option>
-                                <option value="other">Other</option>
-                            </select>
-                        </div>
-                        
-                        <div class="form-group">
-                            <label for="city">City *:</label>
-                            <input type="text" id="city" name="city" class="form-control" required>
-                        </div>
+            <!-- Added hero section with compelling headline and description -->
+            <div class="sell-hero">
+                <h1>Turn Your Books Into Cash</h1>
+                <p>List your secondhand books in minutes and connect with readers looking for great deals</p>
+            </div>
+
+            <div class="sell-form-wrapper">
+                <div class="form-container sell-form">
+                    <!-- Improved form structure with better visual hierarchy -->
+                    <div class="form-header">
+                        <h2>Create Your Book Listing</h2>
+                        <p class="form-subtitle">Fill in the details below to get started</p>
                     </div>
 
-                    <!-- NEW QUANTITY FIELD -->
-                    <div class="form-group">
-                        <label for="quantity">Quantity Available *:</label>
-                        <input type="number" id="quantity" name="quantity" class="form-control" 
-                               min="1" value="1" required
-                               title="How many copies do you want to sell?">
-                    </div>
+                    <div id="errorMessage" class="error-message" style="display: none;"></div>
+                    <div id="successMessage" class="success-message" style="display: none;"></div>
                     
-                    <div class="form-group">
-                        <label for="isbn">ISBN (Optional):</label>
-                        <input type="text" id="isbn" name="isbn" class="form-control" placeholder="e.g., 978-0123456789">
-                    </div>
-                    
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label for="phone">Contact Phone *:</label>
-                            <input type="tel" id="phone" name="phone" class="form-control" required placeholder="e.g., +91 9876543210">
+                    <form id="sellForm" enctype="multipart/form-data">
+                        <!-- Organized form into logical sections with visual separators -->
+                        <div class="form-section">
+                            <h3 class="section-title">Book Information</h3>
+                            
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="title">Book Title <span class="required">*</span></label>
+                                    <input type="text" id="title" name="title" class="form-control" placeholder="Enter book title" required>
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label for="author">Author <span class="required">*</span></label>
+                                    <input type="text" id="author" name="author" class="form-control" placeholder="Enter author name" required>
+                                </div>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="description">Description <span class="required">*</span></label>
+                                <textarea id="description" name="description" class="form-control" placeholder="Describe the book condition, why you're selling, etc." required></textarea>
+                            </div>
+
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="category">Category <span class="required">*</span></label>
+                                    <select id="category" name="category" class="form-control" required>
+                                        <option value="">Select category</option>
+                                        <option value="fiction">Fiction</option>
+                                        <option value="non-fiction">Non-Fiction</option>
+                                        <option value="academic">Academic</option>
+                                        <option value="children">Children</option>
+                                        <option value="comics">Comics</option>
+                                        <option value="textbook">Textbook</option>
+                                        <option value="other">Other</option>
+                                    </select>
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="isbn">ISBN <span class="optional">(Optional)</span></label>
+                                    <input type="text" id="isbn" name="isbn" class="form-control" placeholder="e.g., 978-0123456789">
+                                </div>
+                            </div>
                         </div>
-                        
-                        <div class="form-group">
-                            <label for="email">Contact Email *:</label>
-                            <input type="email" id="email" name="email" class="form-control" required>
+
+                        <!-- Added condition and pricing section -->
+                        <div class="form-section">
+                            <h3 class="section-title">Condition & Pricing</h3>
+                            
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="condition">Condition <span class="required">*</span></label>
+                                    <select id="condition" name="condition" class="form-control" required>
+                                        <option value="">Select condition</option>
+                                        <option value="new">New</option>
+                                        <option value="like-new">Like New</option>
+                                        <option value="good">Good</option>
+                                        <option value="fair">Fair</option>
+                                    </select>
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label for="price">Price (₹) <span class="required">*</span></label>
+                                    <input type="number" id="price" name="price" class="form-control" min="1" placeholder="Enter price" required>
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="quantity">Quantity Available <span class="required">*</span></label>
+                                    <input type="number" id="quantity" name="quantity" class="form-control" min="1" value="1" placeholder="How many copies?" required>
+                                </div>
+                            </div>
                         </div>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="upiId">UPI ID for Payment *:</label>
-                        <input type="text" id="upiId" name="upiId" class="form-control" required placeholder="yourname@paytm">
-                        <small class="form-text">Buyers will use this UPI ID to pay you directly</small>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="images">Book Images (Max 5, 5MB each):</label>
-                        <div class="image-upload" onclick="document.getElementById('images').click()">
-                            <div class="upload-icon">📷</div>
-                            <p>Click to upload images</p>
-                            <small>JPG, PNG, WebP formats supported</small>
-                            <input type="file" id="images" name="images" multiple accept="image/*" style="display: none;">
+
+                        <!-- Added location and contact section -->
+                        <div class="form-section">
+                            <h3 class="section-title">Location & Contact</h3>
+                            
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="city">City <span class="required">*</span></label>
+                                    <input type="text" id="city" name="city" class="form-control" placeholder="Your city" required>
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="phone">Contact Phone <span class="required">*</span></label>
+                                    <input type="tel" id="phone" name="phone" class="form-control" placeholder="+91 9876543210" required>
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="email">Contact Email <span class="required">*</span></label>
+                                <input type="email" id="email" name="email" class="form-control" placeholder="your.email@example.com" required>
+                            </div>
                         </div>
-                        <div id="imagePreview" class="image-preview"></div>
-                    </div>
-                    
-                    <button type="submit" class="btn btn-primary btn-large">Create Listing</button>
-                </form>
+
+                        <!-- Added payment section -->
+                        <div class="form-section">
+                            <h3 class="section-title">Payment Details</h3>
+                            
+                            <div class="form-group">
+                                <label for="upiId">UPI ID for Payment <span class="required">*</span></label>
+                                <input type="text" id="upiId" name="upiId" class="form-control" placeholder="yourname@paytm" required>
+                                <small class="form-text">Buyers will use this UPI ID to pay you directly</small>
+                            </div>
+                        </div>
+
+                        <!-- Improved image upload section with better styling -->
+                        <div class="form-section">
+                            <h3 class="section-title">Book Images</h3>
+                            
+                            <div class="image-upload" onclick="document.getElementById('images').click()">
+                                <div class="upload-icon">📸</div>
+                                <p>Click to upload images</p>
+                                <small>JPG, PNG, WebP formats supported (Max 5 images, 5MB each)</small>
+                                <input type="file" id="images" name="images" multiple accept="image/*" style="display: none;">
+                            </div>
+                            <div id="imagePreview" class="image-preview"></div>
+                        </div>
+
+                        <!-- Improved submit button styling -->
+                        <button type="submit" class="btn btn-primary btn-large btn-submit">Create Listing</button>
+                    </form>
+                </div>
             </div>
         </div>
     </main>
 
     <script src="js/auth.js"></script>
-    <!-- UPDATE THIS SCRIPT TO HANDLE QUANTITY -->
     <script>
         document.getElementById('sellForm').addEventListener('submit', async function(e) {
             e.preventDefault();
@@ -148,13 +182,12 @@
             formData.append('price', document.getElementById('price').value);
             formData.append('category', document.getElementById('category').value);
             formData.append('city', document.getElementById('city').value);
-            formData.append('quantity', document.getElementById('quantity').value); // NEW LINE
+            formData.append('quantity', document.getElementById('quantity').value);
             formData.append('isbn', document.getElementById('isbn').value);
             formData.append('contactPhone', document.getElementById('phone').value);
             formData.append('contactEmail', document.getElementById('email').value);
             formData.append('upiId', document.getElementById('upiId').value);
 
-            // Add images to formData
             const imageFiles = document.getElementById('images').files;
             for (let i = 0; i < imageFiles.length; i++) {
                 formData.append('images', imageFiles[i]);
@@ -174,6 +207,7 @@
                     document.getElementById('errorMessage').style.display = 'none';
                     document.getElementById('sellForm').reset();
                     document.getElementById('imagePreview').innerHTML = '';
+                    setTimeout(() => window.location.href = '/', 2000);
                 } else {
                     document.getElementById('errorMessage').textContent = result.error || 'Failed to create listing';
                     document.getElementById('errorMessage').style.display = 'block';
@@ -187,7 +221,6 @@
             }
         });
 
-        // Image preview functionality
         document.getElementById('images').addEventListener('change', function(e) {
             const files = e.target.files;
             const preview = document.getElementById('imagePreview');
@@ -200,11 +233,6 @@
                 reader.onload = function(e) {
                     const img = document.createElement('img');
                     img.src = e.target.result;
-                    img.style.width = '100px';
-                    img.style.height = '100px';
-                    img.style.objectFit = 'cover';
-                    img.style.margin = '5px';
-                    img.style.borderRadius = '8px';
                     preview.appendChild(img);
                 };
                 
