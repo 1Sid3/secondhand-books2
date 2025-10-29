@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Report Purchase - BookTrade</title>
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <div class="container">
+        <div class="purchase-form-container">
+            <div class="form-header">
+                <h1> Report Your Purchase</h1>
+                <p>Let the admin know about your book purchase so the inventory can be updated.</p>
+            </div>
+            
+            <form id="purchaseNotificationForm" enctype="multipart/form-data">
+                <div class="form-section">
+                    <div class="form-group">
+                        <label for="bookTitle"> Book Title *</label>
+                        <input type="text" id="bookTitle" name="bookTitle" required 
+                               placeholder="Enter the book title exactly as shown">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="bookAuthor"> Author Name *</label>
+                        <input type="text" id="bookAuthor" name="bookAuthor" required 
+                               placeholder="Enter the author's name">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="quantityPurchased"> Quantity Purchased *</label>
+                        <input type="number" id="quantityPurchased" name="quantityPurchased" 
+                               min="1" max="10" required value="1"
+                               placeholder="How many copies did you buy?">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="transactionProof"> Transaction Proof *</label>
+                        <input type="file" id="transactionProof" name="transactionProof" 
+                               accept="image/*" required>
+                        <small class="form-help">
+                            📸 Upload screenshot of your payment (UPI, Bank Transfer, etc.)
+                            <br>Accepted: JPG, PNG (Max: 5MB)
+                        </small>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="additionalNotes"> Additional Notes (Optional)</label>
+                        <textarea id="additionalNotes" name="additionalNotes" rows="3" 
+                                  placeholder="Any additional information about your purchase..."></textarea>
+                    </div>
+                </div>
+                
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary btn-full">
+                         Submit Purchase Report
+                    </button>
+                    <a href="/" class="btn btn-secondary">
+                        ← Back to Home
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <script src="js/purchase-notification.js"></script>
+</body>
+</html>

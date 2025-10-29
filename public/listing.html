@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Book Details - PassMyBook</title>
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <header>
+        <div class="container">
+            <div class="header-content">
+                <a href="/" class="logo">PassMyBook</a>
+                <nav class="nav-links" id="navLinks">
+                    <a href="/">Home</a>
+                    <a href="/sell.html" class="btn btn-primary">Sell Book</a>
+                    <a href="/cart.html" class="btn btn-secondary"> Cart (<span id="cartCount">0</span>)</a>
+                    <a href="/login.html" id="loginLink">Login</a>
+                    <span id="userInfo" style="display: none;">
+                        Welcome, <span id="username"></span>!
+                        <button id="logoutBtn" class="btn btn-secondary">Logout</button>
+                    </span>
+                </nav>
+            </div>
+        </div>
+    </header>
+
+    <main>
+        <div class="container">
+            <div id="listingDetail" class="listing-detail">
+                <!-- Listing details will be loaded here -->
+            </div>
+        </div>
+    </main>
+
+    <footer>
+        <div class="container">
+            <p>&copy; 2025 PassMyBook. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script src="js/auth.js"></script>
+    <script src="js/main.js"></script>
+    <script>
+        // Get listing ID from URL
+        const urlParams = new URLSearchParams(window.location.search);
+        const listingId = urlParams.get('id');
+
+        if (!listingId) {
+            window.location.href = '/';
+        }
+
+        // Load listing details
+        async function loadListingDetails() {
+            try {
+                const response = await fetch(`/api/listings/${listingId}`);
+                const data = await response.json();
+
+                if (response.ok) {
+                    displayListing(data.listing);
+                } else {
+                    document.getElementById('listingDetail').innerHTML = 
+                        '<p class="error-message">Listing not found.</p>';
+                }
+            } catch (error) {
+                console.error('Error loading listing:', error);
+                document.getElementById('listingDetail').innerHTML = 
+                    '<p class="error-message">Error loading listing details.</p>';
+            }
+        }
+
+       function displayListing(listing) {
+    const imagesHtml = listing.images && listing.images.length > 0 
+        ? listing.images.map(img => 
+            `<img src="/uploads/${img}" alt="Book image" class="listing-image-large">`
+          ).join('')
+        : '<p>No images available</p>';
+
+    document.getElementById('listingDetail').innerHTML = `
+        <h1>${listing.title}</h1>
+        <p><strong>Author:</strong> ${listing.author}</p>
+        
+        <div class="listing-images">
+            ${imagesHtml}
+        </div>
+        
+        <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 2rem; margin-top: 2rem;">
+            <div>
+                <h3>Description</h3>
+                <p>${listing.description}</p>
+                
+                <div style="margin-top: 1rem;">
+                    <p><strong>Category:</strong> ${listing.category}</p>
+                    <p><strong>Condition:</strong> ${listing.condition}</p>
+                    <p><strong>City:</strong> ${listing.city}</p>
+                    <p><strong>Quantity Available:</strong> ${listing.quantity || 1} copies</p>
+                    ${listing.isbn ? `<p><strong>ISBN:</strong> ${listing.isbn}</p>` : ''}
+                    <p><strong>Posted:</strong> ${new Date(listing.createdAt).toLocaleDateString()}</p>
+                </div>
+            </div>
+            
+            <div>
+                <div class="listing-price">₹${listing.price}</div>
+                
+                <!-- Quantity selector for Add to Cart -->
+                <div class="listing-actions" style="margin-bottom: 1rem;">
+                    <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 1rem;">
+                        <label for="cartQuantity" style="color: #2c3e50 !important; font-weight: 600;">Quantity:</label>
+                        <input type="number" id="cartQuantity" min="1" max="${listing.quantity}" value="1" 
+                               style="width: 80px; padding: 0.5rem; border: 2px solid #ddd; border-radius: 8px; text-align: center;">
+                    </div>
+                    <button class="add-to-cart-btn" onclick="addToCartFromDetail()">
+                        Add to Cart
+                    </button>
+                </div>
+                
+                <div class="contact-info">
+                    <h4>Contact Seller</h4>
+                    <p><strong>Seller:</strong> ${listing.sellerId.username}</p>
+                    <p><strong>Phone:</strong> ${listing.sellerContact.phone}</p>
+                    <p><strong>Email:</strong> ${listing.sellerContact.email}</p>
+                </div>
+                
+                <div class="upi-info">
+                    <h4>Payment Information</h4>
+                    <p>Pay directly to seller via UPI:</p>
+                    <div class="upi-id">${listing.upiId}</div>
+                    <p style="font-size: 0.9rem; margin-top: 0.5rem; color: #666;">
+                        Verify book condition before payment. PassMyBook is not responsible for transactions.
+                    </p>
+                </div>
+            </div>
+        </div>
+    `;
+}
+
+
+        // ADD TO CART FUNCTION 
+        function addToCartFromDetail() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const bookId = urlParams.get('id');
+    const selectedQuantity = document.getElementById('cartQuantity').value;
+    
+    if (!bookId) {
+        alert('Book ID missing, cannot add to cart');
+        return;
+        }
+            // Call the addToCart function from main.js
+           addToCart(bookId, selectedQuantity);
+        }
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            checkAuthStatus();
+            loadListingDetails();
+            updateCartCount(); // Load cart count
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Second Hand Books Marketplace</title>
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+   <header>
+    <div class="container">
+        <div class="header-content">
+            <a href="/" class="logo">PassMyBook</a>
+            <nav class="nav-links" id="navLinks">
+                <a href="/sell.html" class="btn btn-primary">Sell Book</a>
+                <a href="/cart.html" class="btn btn-secondary"> Cart (<span id="cartCount">0</span>)</a>
+                <a href="/purchase-notification.html" class="btn btn-outline"> Report Purchase</a>
+                
+                <!-- Admin and User Authentication -->
+                <div id="authButtons" class="auth-buttons">
+                    <a href="/admin-login.html" class="btn btn-admin"> Admin</a>
+                    <a href="/login.html" id="loginLink" class="btn btn-outline">Login</a>
+                    <a href="/register.html" id="registerLink" class="btn btn-outline">Register</a>
+                </div>
+                
+                <span id="userInfo" style="display: none;">
+                    Welcome, <span id="username"></span>!
+                    <button id="logoutBtn" class="btn btn-secondary">Logout</button>
+                </span>
+            </nav>
+        </div>
+    </div>
+</header>
+
+    <main>
+        <div class="container">
+            <section class="search-section">
+                <h1>Find Your Next Favorite Book</h1>
+                <form id="searchForm" class="search-form">
+                    <input type="text" id="searchInput" class="search-input" placeholder="Search books by title...">
+                    <button type="submit" class="btn btn-primary">Search</button>
+                </form>
+                
+                <div class="filters">
+                    <select id="categoryFilter" class="filter-select">
+                        <option value="">All Categories</option>
+                        <option value="fiction">Fiction</option>
+                        <option value="non-fiction">Non-Fiction</option>
+                        <option value="academic">Academic</option>
+                        <option value="children">Children</option>
+                        <option value="comics">Comics</option>
+                        <option value="textbook">Textbook</option>
+                        <option value="other">Other</option>
+                    </select>
+                    <select id="conditionFilter" class="filter-select">
+                        <option value="">All Conditions</option>
+                        <option value="new">New</option>
+                        <option value="like-new">Like New</option>
+                        <option value="good">Good</option>
+                        <option value="fair">Fair</option>
+                    </select>
+                    <input type="text" id="cityFilter" class="filter-select" placeholder="City">
+                    <input type="number" id="minPriceFilter" class="filter-select" placeholder="Min Price">
+                    <input type="number" id="maxPriceFilter" class="filter-select" placeholder="Max Price">
+                </div>
+            </section>
+
+            <section id="listingsSection">
+                <div id="listingsGrid" class="listings-grid">
+                    <p>Loading books...</p>
+                </div>
+                <div id="pagination" class="pagination"></div>
+            </section>
+        </div>
+    </main>
+
+    <footer>
+        <div class="container">
+            <p>&copy; 2025 BookTrade All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script src="js/auth.js"></script>
+    <script src="js/main.js"></script>
+
+    <!-- Enhanced book card rendering with quantity display -->
+    <script>
+        // Function to get quantity display with appropriate styling
+        function getQuantityHTML(quantity) {
+            if (quantity === 0) {
+                return `<span class="book-quantity out-of-stock"> Out of Stock</span>`;
+            } else if (quantity === 1) {
+                return `<span class="book-quantity low-stock"> Only 1 left!</span>`;
+            } else if (quantity <= 3) {
+                return `<span class="book-quantity low-stock"> Only ${quantity} left!</span>`;
+            } else {
+                return `<span class="book-quantity"> ${quantity} available</span>`;
+            }
+        }
+
+        // Enhanced book card creation function
+        function createBookCard(book) {
+            const bookCard = document.createElement('div');
+            bookCard.className = 'book-card';
+            
+            // Handle image display
+            const imageHTML = book.images && book.images.length > 0 
+                ? `<img src="/uploads/${book.images[0]}" alt="${book.title}" class="book-image" />`
+                : `<div class="book-image no-image">📚</div>`;
+            
+            // Get quantity display
+            const quantityHTML = getQuantityHTML(book.quantity || 1);
+            
+            // Check if book is available for purchase
+            const isOutOfStock = (book.quantity || 1) === 0;
+            
+            bookCard.innerHTML = `
+                ${imageHTML}
+                <div class="book-info">
+                    <h3 class="book-title">${book.title}</h3>
+                    <p class="book-author">by ${book.author}</p>
+                    
+                    <div class="book-details">
+                        <span class="book-price">₹${book.price.toLocaleString()}</span>
+                        <span class="book-condition ${book.condition}">${book.condition.toUpperCase()}</span>
+                    </div>
+                    
+                    <!-- Updated meta section with quantity and city -->
+                    <div class="book-meta">
+                        ${quantityHTML}
+                        <span class="book-location">📍 ${book.city}</span>
+                    </div>
+                    
+                    <div class="book-actions">
+                        ${isOutOfStock ? 
+                            `<button class="btn btn-outline" disabled style="opacity: 0.5; cursor: not-allowed;">
+                                Out of Stock
+                            </button>` :
+                            `<button class="btn btn-outline" onclick="addToCart('${book._id}')">
+                                ADD TO CART
+                            </button>`
+                        }
+                        <button class="btn btn-primary" onclick="window.location.href='/listing.html?id=${book._id}'">
+                            VIEW DETAILS
+                        </button>
+                    </div>
+                </div>
+            `;
+            
+            return bookCard;
+        }
+
+        // Function to handle adding books to cart
+        async function addToCart(bookId) {
+            try {
+                const response = await fetch('/api/cart/add', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ bookId, quantity: 1 })
+                });
+
+                const result = await response.json();
+
+                if (response.ok) {
+                    showNotification('Book added to cart!', 'success');
+                    // Update cart count if the function exists
+                    if (typeof updateCartCount === 'function') {
+                        updateCartCount(result.totalItems);
+                    }
+                } else {
+                    if (response.status === 401) {
+                        alert('Please login to add items to cart');
+                        window.location.href = '/login.html';
+                    } else {
+                        showNotification(result.error || 'Failed to add to cart', 'error');
+                    }
+                }
+            } catch (error) {
+                console.error('Add to cart error:', error);
+                showNotification('Error adding to cart', 'error');
+            }
+        }
+
+        // Simple notification function
+        function showNotification(message, type) {
+            // Remove existing notifications
+            document.querySelectorAll('.notification').forEach(notif => notif.remove());
+            
+            const notification = document.createElement('div');
+            notification.className = `notification ${type}`;
+            notification.textContent = message;
+            
+            notification.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                padding: 1rem 2rem;
+                border-radius: 4px;
+                color: white;
+                font-weight: bold;
+                z-index: 1000;
+                background: ${type === 'success' ? '#27ae60' : '#e74c3c'};
+                box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            `;
+            
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                if (notification.parentNode) {
+                    notification.remove();
+                }
+            }, 3000);
+        }
+    </script>
+</body>
+</html>

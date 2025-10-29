@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shopping Cart - PassMyBook</title>
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <header>
+        <div class="container">
+            <div class="header-content">
+                <a href="/" class="logo">PassMyBook</a>
+                <nav class="nav-links" id="navLinks">
+                    <a href="/">Home</a>
+                    <a href="/sell.html" class="btn btn-primary">Sell Book</a>
+                    <a href="/cart.html" class="btn btn-secondary">
+                        Cart (<span id="cartCount">0</span>)
+                    </a>
+                    <a href="/login.html" id="loginLink">Login</a>
+                    <span id="userInfo" style="display: none;">
+                        Welcome, <span id="username"></span>!
+                        <button id="logoutBtn" class="btn btn-secondary">Logout</button>
+                    </span>
+                </nav>
+            </div>
+        </div>
+    </header>
+
+    <main>
+        <div class="container">
+            <div class="cart-container">
+                <h1>Your Shopping Cart</h1>
+                <div id="cartItems"></div>
+                <div id="cartTotal" class="cart-total"></div>
+                <div class="cart-actions">
+                    <button id="clearCartBtn" class="btn btn-secondary">Clear Cart</button>
+                    <button id="checkoutBtn" class="btn btn-primary">Proceed to Checkout</button>
+                    <a href="/purchase-notification.html" class="btn btn-secondary report-purchase-btn">
+                     Report Purchase to Admin
+                    </a>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script src="js/auth.js"></script>
+    <script src="js/cart.js"></script>
+</body>
+</html>
