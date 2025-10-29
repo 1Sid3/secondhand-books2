@@ -155,7 +155,13 @@ const purchaseNotificationValidation = [
     .withMessage("Author name is required")
     .isLength({ max: 100 })
     .withMessage("Author name must be less than 100 characters"),
-  body("quantity").isInt({ min: 1, max: 10 }).withMessage("Quantity must be between 1 and 10"),
+  body("quantityPurchased")
+    .trim()
+    .notEmpty()
+    .withMessage("Quantity is required")
+    .toInt()
+    .isInt({ min: 1, max: 10 })
+    .withMessage("Quantity must be between 1 and 10"),
   body("buyerName")
     .optional({ checkFalsy: true })
     .trim()
@@ -165,7 +171,7 @@ const purchaseNotificationValidation = [
   body("buyerPhone")
     .optional({ checkFalsy: true })
     .trim()
-    .matches(/^[\d\s\-+$$$$]+$/)
+    .matches(/^[\d\s\-+()]+$/)
     .withMessage("Invalid phone number format"),
   body("amountPaid").optional({ checkFalsy: true }).isFloat({ min: 0 }).withMessage("Amount must be a positive number"),
   body("paymentMethod")
@@ -205,8 +211,17 @@ router.post("/", upload.single("transactionProof"), purchaseNotificationValidati
       })
     }
 
-    const { bookTitle, bookAuthor, quantity, buyerName, buyerEmail, buyerPhone, amountPaid, paymentMethod, notes } =
-      req.body
+    const {
+      bookTitle,
+      bookAuthor,
+      quantityPurchased,
+      buyerName,
+      buyerEmail,
+      buyerPhone,
+      amountPaid,
+      paymentMethod,
+      notes,
+    } = req.body
 
     // Find the book listing by title and author
     const listing = await BookListing.findOne({
@@ -224,7 +239,7 @@ router.post("/", upload.single("transactionProof"), purchaseNotificationValidati
     }
 
     // Validate stock availability
-    const requestedQuantity = Number.parseInt(quantity)
+    const requestedQuantity = Number.parseInt(quantityPurchased)
     const availableStock = listing.quantity || 0
 
     if (availableStock === 0) {

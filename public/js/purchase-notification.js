@@ -140,6 +140,9 @@ async function handleFormSubmit(event) {
     return
   }
 
+  const quantity = formData.get("quantityPurchased")
+  formData.set("quantityPurchased", String(Number.parseInt(quantity)))
+
   // Show loading state
   const originalButtonText = submitBtn.innerHTML
   submitBtn.disabled = true
