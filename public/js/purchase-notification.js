@@ -18,7 +18,7 @@ async function populateBookDropdown() {
   select.innerHTML = '<option value="">Loading books...</option>'
 
   try {
-    const response = await fetch("/api/listings?limit=1000")
+    const response = await fetch("/api/listings?limit=100")
 
     if (!response.ok) {
       throw new Error(`API returned ${response.status}`)
