@@ -1,8 +1,10 @@
-// Declare the checkAuthStatus function or import it before using it
-async function checkAuthStatus() {
-  // Placeholder implementation for checkAuthStatus
-  // This should be replaced with the actual implementation
-  return null // Return null or a user object based on authentication status
+// Declare the checkAuthStatus function globally or import it properly
+function checkAuthStatus() {
+  return new Promise((resolve) => {
+    // Placeholder for actual authentication status check
+    const user = true // Assume user is logged in for demonstration
+    resolve(user)
+  })
 }
 
 document.addEventListener("DOMContentLoaded", () => {
@@ -125,7 +127,7 @@ async function updateQuantity(bookId, newQuantity) {
       showNotification("Cart updated successfully", "success")
     } else {
       showNotification(result.error || "Failed to update cart", "error")
-      loadCart() // Reload to show correct quantity
+      loadCart()
     }
   } catch (error) {
     console.error("Update quantity error:", error)
@@ -163,7 +165,6 @@ function showNotification(message, type) {
   }, 3000)
 }
 
-// UPDATED - Simpler approach for removeFromCart
 async function removeFromCart(bookId) {
   try {
     const response = await fetch(`/api/cart/remove/${bookId}`, {
@@ -173,8 +174,7 @@ async function removeFromCart(bookId) {
     const result = await response.json()
 
     if (response.ok) {
-      loadCart() // Reload cart
-      // Simple success feedback
+      loadCart()
       console.log("Item removed from cart")
     } else {
       alert(result.error || "Failed to remove item")
@@ -185,7 +185,6 @@ async function removeFromCart(bookId) {
   }
 }
 
-// UPDATED - Simpler approach for clearCart
 async function clearCart() {
   if (!confirm("Are you sure you want to clear your cart?")) {
     return
@@ -199,7 +198,7 @@ async function clearCart() {
     const result = await response.json()
 
     if (response.ok) {
-      loadCart() // Reload cart
+      loadCart()
       alert("Cart cleared successfully")
     } else {
       alert(result.error || "Failed to clear cart")
