@@ -2,7 +2,7 @@ let currentPage = 1
 
 document.addEventListener("DOMContentLoaded", () => {
   loadListings()
-  updateCartCount() // Load cart count on page load
+  updateCartCount()
 
   const searchForm = document.getElementById("searchForm")
   if (searchForm) {
@@ -13,7 +13,6 @@ document.addEventListener("DOMContentLoaded", () => {
     })
   }
 
-  // Add filter event listeners
   const filters = ["categoryFilter", "conditionFilter", "cityFilter", "minPriceFilter", "maxPriceFilter"]
   filters.forEach((filterId) => {
     const element = document.getElementById(filterId)
@@ -24,16 +23,6 @@ document.addEventListener("DOMContentLoaded", () => {
       })
     }
   })
-
-  // Initialize quantity controls after listings are loaded
-  setTimeout(() => {
-    document.querySelectorAll(".qty-input").forEach((input) => {
-      const bookId = input.id.replace("qty-", "")
-      const minQty = Number.parseInt(input.min)
-      const maxQty = Number.parseInt(input.max)
-      updateQuantityButtons(bookId, 1, minQty, maxQty)
-    })
-  }, 1000)
 })
 
 async function loadListings() {
@@ -84,83 +73,88 @@ async function loadListings() {
 
 function getQuantityHTML(quantity) {
   if (quantity === 0) {
-    return `<div class="listing-quantity out-of-stock">Out of Stock</div>`
+    return `<div class="listing-quantity out-of-stock" style="color: #e74c3c; font-weight: bold; background: rgba(231, 76, 60, 0.1); padding: 0.4rem 0.8rem; border-radius: 6px; border: 1px solid #e74c3c;">❌ Out of Stock</div>`
   } else if (quantity === 1) {
-    return `<div class="listing-quantity low-stock">Only 1 left!</div>`
+    return `<div class="listing-quantity low-stock" style="color: #f39c12; font-weight: bold; background: rgba(243, 156, 18, 0.1); padding: 0.4rem 0.8rem; border-radius: 6px; border: 1px solid #f39c12;">⚠️ Only 1 left!</div>`
   } else if (quantity <= 3) {
-    return `<div class="listing-quantity low-stock">Only ${quantity} left!</div>`
+    return `<div class="listing-quantity low-stock" style="color: #f39c12; font-weight: bold; background: rgba(243, 156, 18, 0.1); padding: 0.4rem 0.8rem; border-radius: 6px; border: 1px solid #f39c12;">⚠️ Only ${quantity} left!</div>`
   } else {
-    return `<div class="listing-quantity">${quantity} available</div>`
+    return `<div class="listing-quantity" style="color: #27ae60; font-weight: 600; background: rgba(39, 174, 96, 0.1); padding: 0.4rem 0.8rem; border-radius: 6px; border: 1px solid #27ae60;">✓ ${quantity} available</div>`
   }
 }
 
-// UPDATED displayListings function with quantity controls
 function displayListings(listings) {
   const grid = document.getElementById("listingsGrid")
 
   if (listings.length === 0) {
     grid.innerHTML = `
-            <div class="empty-state" style="grid-column: 1 / -1;">
-                <h3>No Books Found</h3>
-                <p>Be the first to sell a book in this category!</p>
-                <a href="/sell.html" class="btn btn-primary" style="margin-top: 1rem;">Sell Your Books</a>
-            </div>
-        `
+      <div class="empty-state" style="grid-column: 1 / -1;">
+        <h3>No Books Found</h3>
+        <p>Be the first to sell a book in this category!</p>
+        <a href="/sell.html" class="btn btn-primary" style="margin-top: 1rem;">Sell Your Books</a>
+      </div>
+    `
     return
   }
 
   grid.innerHTML = listings
-    .map(
-      (listing) => `
-        <div class="listing-card">
-            ${
-              listing.images && listing.images.length > 0
-                ? `<img src="/uploads/${listing.images[0]}" alt="${listing.title}" class="listing-image">`
-                : `<div class="listing-image" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); display: flex; align-items: center; justify-content: center; color: white; font-size: 3rem;">📖</div>`
-            }
-            <div class="listing-content">
-                <h3 class="listing-title">${listing.title}</h3>
-                <p class="listing-author">by ${listing.author}</p>
-                <div class="listing-price">₹${listing.price.toLocaleString()}</div>
-                <div class="listing-meta">
-                    <span class="listing-condition condition-${listing.condition}">${listing.condition.replace("-", " ")}</span>
-                    <div class="listing-city">${listing.city}</div>
-                    ${getQuantityHTML(listing.quantity || 1)}
-                </div>
-                <div class="card-actions">
-                    <button class="view-details-btn" onclick="viewDetails('${listing._id}')" style="margin-bottom: 0.5rem;">
-                        View Details
-                    </button>
-                    
-                    ${
-                      listing.quantity > 0
-                        ? `
-                        <div class="quantity-controls">
-                            <label for="qty-${listing._id}" class="qty-label">Quantity:</label>
-                            <div class="qty-input-group">
-                                <button type="button" class="qty-btn qty-decrease" onclick="changeQuantity('${listing._id}', -1)">-</button>
-                                <input type="number" id="qty-${listing._id}" class="qty-input" value="1" min="1" max="${listing.quantity}" readonly />
-                                <button type="button" class="qty-btn qty-increase" onclick="changeQuantity('${listing._id}', 1)">+</button>
-                            </div>
-                            <button class="add-to-cart-btn" onclick="addToCartWithQty('${listing._id}')">
-                                Add to Cart
-                            </button>
-                        </div>
-                    `
-                        : `
-                        <button class="add-to-cart-btn" disabled style="opacity: 0.5; cursor: not-allowed;">
-                            Out of Stock
-                        </button>
-                    `
-                    }
-                </div>
+    .map((listing) => {
+      const quantity = listing.quantity || 0
+      const isOutOfStock = quantity === 0
+
+      return `
+        <div class="listing-card ${isOutOfStock ? 'out-of-stock-card' : ''}">
+          ${
+            listing.images && listing.images.length > 0
+              ? `<img src="/uploads/${listing.images[0]}" alt="${listing.title}" class="listing-image" style="${isOutOfStock ? 'opacity: 0.6; filter: grayscale(50%);' : ''}">`
+              : `<div class="listing-image" style="background: linear-gradient(135deg, ${isOutOfStock ? '#95a5a6' : '#667eea'} 0%, ${isOutOfStock ? '#7f8c8d' : '#764ba2'} 100%); display: flex; align-items: center; justify-content: center; color: white; font-size: 3rem; ${isOutOfStock ? 'opacity: 0.6;' : ''}">📖</div>`
+          }
+          <div class="listing-content">
+            <h3 class="listing-title" style="${isOutOfStock ? 'color: #7f8c8d;' : ''}">${listing.title}</h3>
+            <p class="listing-author">by ${listing.author}</p>
+            <div class="listing-price" style="${isOutOfStock ? 'opacity: 0.7;' : ''}">₹${listing.price.toLocaleString()}</div>
+            <div class="listing-meta">
+              <span class="listing-condition condition-${listing.condition}">${listing.condition.replace("-", " ")}</span>
+              <div class="listing-city">${listing.city}</div>
             </div>
+            ${getQuantityHTML(quantity)}
+            <div class="card-actions">
+              <button class="view-details-btn" onclick="viewDetails('${listing._id}')" style="margin-bottom: 0.5rem;">
+                View Details
+              </button>
+              
+              ${
+                isOutOfStock
+                  ? `
+                <div style="background: rgba(231, 76, 60, 0.1); padding: 0.8rem; border-radius: 8px; border: 1px solid #e74c3c; margin-top: 0.5rem;">
+                  <p style="color: #c0392b; font-weight: 600; font-size: 0.9rem; margin: 0;">Out of Stock</p>
+                </div>
+                <button class="add-to-cart-btn" disabled style="opacity: 0.5; cursor: not-allowed; background: #95a5a6 !important;">
+                  Cannot Add to Cart
+                </button>
+              `
+                  : `
+                <div class="quantity-controls">
+                  <label for="qty-${listing._id}" class="qty-label">Quantity:</label>
+                  <div class="qty-input-group">
+                    <button type="button" class="qty-btn qty-decrease" onclick="changeQuantity('${listing._id}', -1)">-</button>
+                    <input type="number" id="qty-${listing._id}" class="qty-input" value="1" min="1" max="${quantity}" readonly />
+                    <button type="button" class="qty-btn qty-increase" onclick="changeQuantity('${listing._id}', 1)">+</button>
+                  </div>
+                  <button class="add-to-cart-btn" onclick="addToCartWithQty('${listing._id}')">
+                    Add to Cart
+                  </button>
+                </div>
+              `
+              }
+            </div>
+          </div>
         </div>
-    `,
-    )
+      `
+    })
     .join("")
 
-  // Initialize quantity buttons after DOM is updated
+  // Initialize quantity buttons for available books
   setTimeout(() => {
     listings.forEach((listing) => {
       if (listing.quantity > 0) {
@@ -170,16 +164,14 @@ function displayListings(listings) {
   }, 100)
 }
 
-// Function to change quantity with validation
 function changeQuantity(bookId, change) {
   const qtyInput = document.getElementById(`qty-${bookId}`)
-  const currentQty = Number.parseInt(qtyInput.value)
+  const currentQty = parseInt(qtyInput.value)
   let newQty = currentQty + change
 
-  const maxQty = Number.parseInt(qtyInput.max)
-  const minQty = Number.parseInt(qtyInput.min)
+  const maxQty = parseInt(qtyInput.max)
+  const minQty = parseInt(qtyInput.min)
 
-  // Enforce min and max limits
   if (newQty > maxQty) {
     newQty = maxQty
     showNotification(`Maximum ${maxQty} items available for this book`, "error")
@@ -188,12 +180,9 @@ function changeQuantity(bookId, change) {
   }
 
   qtyInput.value = newQty
-
-  // Update button states
   updateQuantityButtons(bookId, newQty, minQty, maxQty)
 }
 
-// Function to update quantity button states
 function updateQuantityButtons(bookId, currentQty, minQty, maxQty) {
   const qtyInput = document.getElementById(`qty-${bookId}`)
   if (!qtyInput) return
@@ -202,7 +191,6 @@ function updateQuantityButtons(bookId, currentQty, minQty, maxQty) {
   const increaseBtn = qtyInput.nextElementSibling
 
   if (decreaseBtn && decreaseBtn.classList.contains("qty-decrease")) {
-    // Disable decrease button at minimum
     if (currentQty <= minQty) {
       decreaseBtn.disabled = true
       decreaseBtn.style.opacity = "0.5"
@@ -213,7 +201,6 @@ function updateQuantityButtons(bookId, currentQty, minQty, maxQty) {
   }
 
   if (increaseBtn && increaseBtn.classList.contains("qty-increase")) {
-    // Disable increase button at maximum
     if (currentQty >= maxQty) {
       increaseBtn.disabled = true
       increaseBtn.style.opacity = "0.5"
@@ -224,14 +211,12 @@ function updateQuantityButtons(bookId, currentQty, minQty, maxQty) {
   }
 }
 
-// Enhanced add to cart function with quantity validation
 async function addToCartWithQty(bookId) {
   const qtyInput = document.getElementById(`qty-${bookId}`)
-  let quantity = Number.parseInt(qtyInput.value)
-  const maxQuantity = Number.parseInt(qtyInput.max)
-  const minQuantity = Number.parseInt(qtyInput.min)
+  let quantity = parseInt(qtyInput.value)
+  const maxQuantity = parseInt(qtyInput.max)
+  const minQuantity = parseInt(qtyInput.min)
 
-  // Validate quantity bounds
   if (quantity > maxQuantity) {
     quantity = maxQuantity
     qtyInput.value = maxQuantity
@@ -242,10 +227,7 @@ async function addToCartWithQty(bookId) {
     qtyInput.value = minQuantity
   }
 
-  // Call existing addToCart function
   await addToCart(bookId, quantity)
-
-  // Reset quantity input after successful add to cart
   qtyInput.value = 1
   updateQuantityButtons(bookId, 1, minQuantity, maxQuantity)
 }
@@ -260,10 +242,8 @@ function displayPagination(pagination) {
 
   let html = '<div style="display: flex; justify-content: center; align-items: center; gap: 10px; margin-top: 2rem;">'
 
-  // Previous button
   html += `<button onclick="changePage(${pagination.page - 1})" ${pagination.page <= 1 ? "disabled" : ""} class="btn btn-secondary" style="opacity: ${pagination.page <= 1 ? "0.5" : "1"}">Previous</button>`
 
-  // Page numbers
   for (let i = 1; i <= pagination.pages; i++) {
     if (i === pagination.page) {
       html += `<button disabled class="btn btn-primary">${i}</button>`
@@ -276,7 +256,6 @@ function displayPagination(pagination) {
     }
   }
 
-  // Next button
   html += `<button onclick="changePage(${pagination.page + 1})" ${pagination.page >= pagination.pages ? "disabled" : ""} class="btn btn-secondary" style="opacity: ${pagination.page >= pagination.pages ? "0.5" : "1"}">Next</button>`
 
   html += "</div>"
@@ -293,7 +272,6 @@ function viewDetails(listingId) {
   window.location.href = `/listing.html?id=${listingId}`
 }
 
-// Add to cart functionality
 async function addToCart(bookId, quantity = 1) {
   try {
     const response = await fetch("/api/cart/add", {
@@ -301,7 +279,7 @@ async function addToCart(bookId, quantity = 1) {
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ bookId, quantity: Number.parseInt(quantity) }),
+      body: JSON.stringify({ bookId, quantity: parseInt(quantity) }),
     })
 
     const result = await response.json()
@@ -323,7 +301,6 @@ async function addToCart(bookId, quantity = 1) {
   }
 }
 
-// Update cart count in header
 async function updateCartCount(count = null) {
   if (count === null) {
     try {
@@ -332,7 +309,6 @@ async function updateCartCount(count = null) {
         const cart = await response.json()
         count = cart.totalItems || 0
       } else {
-        // If not logged in or cart doesn't exist, set count to 0
         count = 0
       }
     } catch (error) {
@@ -347,18 +323,28 @@ async function updateCartCount(count = null) {
   }
 }
 
-// Show notification
 function showNotification(message, type) {
-  // Remove existing notifications
   document.querySelectorAll(".notification").forEach((notif) => notif.remove())
 
   const notification = document.createElement("div")
   notification.className = `notification ${type}`
   notification.textContent = message
+  notification.style.cssText = `
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    padding: 1rem 2rem;
+    border-radius: 15px;
+    color: white;
+    font-weight: bold;
+    z-index: 1000;
+    background: ${type === "success" ? "rgba(38, 222, 129, 0.9)" : "rgba(231, 76, 60, 0.9)"};
+    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+    animation: notificationSlide 0.5s ease-out;
+  `
 
   document.body.appendChild(notification)
 
-  // Auto remove after 4 seconds
   setTimeout(() => {
     notification.style.animation = "notificationSlide 0.5s ease-out reverse"
     setTimeout(() => {
@@ -369,15 +355,44 @@ function showNotification(message, type) {
   }, 4000)
 }
 
-// Add dynamic loading animations and interactions
+// Add CSS for notification animation
+const style = document.createElement("style")
+style.textContent = `
+  @keyframes notificationSlide {
+    from {
+      transform: translateX(400px);
+      opacity: 0;
+    }
+    to {
+      transform: translateX(0);
+      opacity: 1;
+    }
+  }
+
+  .out-of-stock-card {
+    position: relative;
+  }
+
+  .out-of-stock-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(149, 165, 166, 0.1);
+    border-radius: 25px;
+    pointer-events: none;
+  }
+`
+document.head.appendChild(style)
+
 document.addEventListener("DOMContentLoaded", () => {
-  // Stagger card animations
   const cards = document.querySelectorAll(".listing-card")
   cards.forEach((card, index) => {
     card.style.animationDelay = `${index * 0.1}s`
   })
 
-  // Add floating animation to search section
   const searchSection = document.querySelector(".search-section")
   if (searchSection) {
     searchSection.addEventListener("mouseenter", function () {
@@ -389,7 +404,6 @@ document.addEventListener("DOMContentLoaded", () => {
     })
   }
 
-  // Add ripple effect to buttons
   document.querySelectorAll(".btn, .view-details-btn, .add-to-cart-btn").forEach((button) => {
     button.addEventListener("click", function (e) {
       const ripple = document.createElement("span")
@@ -408,7 +422,6 @@ document.addEventListener("DOMContentLoaded", () => {
     })
   })
 
-  // Smooth scroll for better UX
   document.querySelectorAll('a[href^="#"]').forEach((anchor) => {
     anchor.addEventListener("click", function (e) {
       e.preventDefault()
@@ -422,7 +435,6 @@ document.addEventListener("DOMContentLoaded", () => {
     })
   })
 
-  // Add parallax effect to background
   window.addEventListener("scroll", () => {
     const scrolled = window.pageYOffset
     const parallax = document.querySelector("body::before")
@@ -433,7 +445,6 @@ document.addEventListener("DOMContentLoaded", () => {
   })
 })
 
-// Add intersection observer for scroll animations
 const observerOptions = {
   threshold: 0.1,
   rootMargin: "0px 0px -50px 0px",
@@ -447,7 +458,6 @@ const observer = new IntersectionObserver((entries) => {
   })
 }, observerOptions)
 
-// Observe all cards for scroll animations
 document.querySelectorAll(".listing-card").forEach((card) => {
   observer.observe(card)
 })

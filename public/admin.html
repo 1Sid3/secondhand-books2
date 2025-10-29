@@ -1,128 +1,163 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>PassMyBook Admin Panel</title>
-    <link rel="stylesheet" href="css/styles.css">
-    <link rel="stylesheet" href="css/admin.css">
-</head>
-<body>
+    <link rel="stylesheet" href="css/styles.css" />
+    <link rel="stylesheet" href="css/admin.css" />
+    <style>
+      input::placeholder {
+        color: black;
+        opacity: 1; /* For Firefox */
+      }
+      ::-webkit-input-placeholder {
+        /* Chrome, Safari, Opera */
+        color: black;
+      }
+      ::-ms-input-placeholder {
+        /* Edge */
+        color: black;
+      }
+    </style>
+  </head>
+  <body>
     <div class="admin-container">
-        <!-- Sidebar -->
-        <div class="admin-sidebar">
-            <div class="admin-logo">
-                <h2>PassMyBook Admin</h2>
-            </div>
-            <nav class="admin-nav">
-                <a href="#inventory" class="nav-item active" data-section="inventory"> Inventory Management</a>
-                <a href="#purchases" class="nav-item" data-section="purchases"> Purchase Notifications</a>
-                <a href="/" class="nav-item"> Back to Site</a>
-            </nav>
+      <!-- Sidebar -->
+      <div class="admin-sidebar">
+        <div class="admin-logo">
+          <h2>PassMyBook Admin</h2>
+        </div>
+        <nav class="admin-nav">
+          <a href="#inventory" class="nav-item active" data-section="inventory">
+            Inventory Management</a
+          >
+          <a href="#purchases" class="nav-item" data-section="purchases">
+            Purchase Notifications</a
+          >
+          <a href="/" class="nav-item"> Back to Site</a>
+        </nav>
+      </div>
+
+      <!-- Main Content -->
+      <div class="admin-main">
+        <!-- Inventory Management Section -->
+        <div id="inventory" class="admin-section active">
+          <div class="admin-header">
+            <h1>Inventory Management</h1>
+            <button class="btn btn-primary" onclick="refreshInventory()">
+              Refresh
+            </button>
+          </div>
+
+          <!-- Search and Filter -->
+          <div class="admin-controls">
+            <input
+              type="text"
+              id="inventorySearch"
+              placeholder="Search books by title or author..."
+              class="search-input"
+            />
+            <select id="stockFilter" class="filter-select">
+              <option value="">All Stock Levels</option>
+              <option value="out-of-stock">Out of Stock</option>
+              <option value="low-stock">Low Stock (≤3)</option>
+              <option value="in-stock">In Stock</option>
+            </select>
+          </div>
+
+          <!-- Inventory Table -->
+          <div class="table-container">
+            <table class="admin-table">
+              <thead>
+                <tr>
+                  <th>Book Title</th>
+                  <th>Author</th>
+                  <th>Current Stock</th>
+                  <th>Price</th>
+                  <th>Status</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="inventoryTableBody">
+                <!-- Dynamic content -->
+              </tbody>
+            </table>
+          </div>
         </div>
 
-        <!-- Main Content -->
-        <div class="admin-main">
-            <!-- Inventory Management Section -->
-            <div id="inventory" class="admin-section active">
-                <div class="admin-header">
-                    <h1> Inventory Management</h1>
-                    <button class="btn btn-primary" onclick="refreshInventory()">Refresh</button>
-                </div>
-                
-                <!-- Search and Filter -->
-                <div class="admin-controls">
-                    <input type="text" id="inventorySearch" placeholder="Search books by title or author..." class="search-input">
-                    <select id="stockFilter" class="filter-select">
-                        <option value="">All Stock Levels</option>
-                        <option value="out-of-stock">Out of Stock</option>
-                        <option value="low-stock">Low Stock (≤3)</option>
-                        <option value="in-stock">In Stock</option>
-                    </select>
-                </div>
+        <!-- Purchase Notifications Section -->
+        <div id="purchases" class="admin-section">
+          <div class="admin-header">
+            <h1>Purchase Notifications</h1>
+            <button class="btn btn-secondary" onclick="markAllAsRead()">
+              Mark All as Read
+            </button>
+          </div>
 
-                <!-- Inventory Table -->
-                <div class="table-container">
-                    <table class="admin-table">
-                        <thead>
-                            <tr>
-                                <th>Book Title</th>
-                                <th>Author</th>
-                                <th>Current Stock</th>
-                                <th>Price</th>
-                                <th>Status</th>
-                                <th>Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody id="inventoryTableBody">
-                            <!-- Dynamic content -->
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-
-            <!-- Purchase Notifications Section -->
-            <div id="purchases" class="admin-section">
-                <div class="admin-header">
-                    <h1>Purchase Notifications</h1>
-                    <button class="btn btn-secondary" onclick="markAllAsRead()">Mark All as Read</button>
-                </div>
-                
-                <div class="notifications-container" id="purchaseNotifications">
-                    <!-- Dynamic notifications content -->
-                </div>
-            </div>
+          <div class="notifications-container" id="purchaseNotifications">
+            <!-- Dynamic notifications content -->
+          </div>
         </div>
+      </div>
     </div>
 
     <!-- Modals -->
     <!-- Update Stock Modal -->
     <div id="updateStockModal" class="modal">
-        <div class="modal-content">
-            <span class="close" onclick="closeModal('updateStockModal')">&times;</span>
-            <h2>Update Stock Quantity</h2>
-            <form id="updateStockForm">
-                <div class="form-group">
-                    <label>Book Title:</label>
-                    <input type="text" id="modalBookTitle" readonly>
-                </div>
-                <div class="form-group">
-                    <label>Current Stock:</label>
-                    <input type="number" id="modalCurrentStock" readonly>
-                </div>
-                <div class="form-group">
-                    <label>New Stock:</label>
-                    <input type="number" id="modalNewStock" min="0" required>
-                </div>
-                <div class="form-group">
-                    <label>Reason:</label>
-                    <select id="modalReason" required>
-                        <option value="">Select reason...</option>
-                        <option value="purchase">Book purchased</option>
-                        <option value="restock">Restocked</option>
-                        <option value="damage">Damaged/Lost</option>
-                        <option value="correction">Stock correction</option>
-                    </select>
-                </div>
-                <div class="modal-actions">
-                    <button type="button" class="btn btn-secondary" onclick="closeModal('updateStockModal')">Cancel</button>
-                    <button type="submit" class="btn btn-primary">Update Stock</button>
-                </div>
-            </form>
-        </div>
+      <div class="modal-content">
+        <span class="close" onclick="closeModal('updateStockModal')"
+          >&times;</span
+        >
+        <h2>Update Stock Quantity</h2>
+        <form id="updateStockForm">
+          <div class="form-group">
+            <label>Book Title:</label>
+            <input type="text" id="modalBookTitle" readonly />
+          </div>
+          <div class="form-group">
+            <label>Current Stock:</label>
+            <input type="number" id="modalCurrentStock" readonly />
+          </div>
+          <div class="form-group">
+            <label>New Stock:</label>
+            <input type="number" id="modalNewStock" min="0" required />
+          </div>
+          <div class="form-group">
+            <label>Reason:</label>
+            <select id="modalReason" required>
+              <option value="">Select reason...</option>
+              <option value="purchase">Book purchased</option>
+              <option value="restock">Restocked</option>
+              <option value="damage">Damaged/Lost</option>
+              <option value="correction">Stock correction</option>
+            </select>
+          </div>
+          <div class="modal-actions">
+            <button
+              type="button"
+              class="btn btn-secondary"
+              onclick="closeModal('updateStockModal')"
+            >
+              Cancel
+            </button>
+            <button type="submit" class="btn btn-primary">Update Stock</button>
+          </div>
+        </form>
+      </div>
     </div>
 
     <!-- Purchase Notification Modal -->
     <div id="purchaseModal" class="modal">
-        <div class="modal-content">
-            <span class="close" onclick="closeModal('purchaseModal')">&times;</span>
-            <h2>Purchase Notification Details</h2>
-            <div id="purchaseModalContent">
-                <!-- Dynamic content -->
-            </div>
+      <div class="modal-content">
+        <span class="close" onclick="closeModal('purchaseModal')">&times;</span>
+        <h2>Purchase Notification Details</h2>
+        <div id="purchaseModalContent">
+          <!-- Dynamic content -->
         </div>
+      </div>
     </div>
 
     <script src="js/admin.js"></script>
-</body>
+  </body>
 </html>

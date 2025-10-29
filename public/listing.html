@@ -14,7 +14,7 @@
                 <nav class="nav-links" id="navLinks">
                     <a href="/">Home</a>
                     <a href="/sell.html" class="btn btn-primary">Sell Book</a>
-                    <a href="/cart.html" class="btn btn-secondary"> Cart (<span id="cartCount">0</span>)</a>
+                    <a href="/cart.html" class="btn btn-secondary">Cart (<span id="cartCount">0</span>)</a>
                     <a href="/login.html" id="loginLink">Login</a>
                     <span id="userInfo" style="display: none;">
                         Welcome, <span id="username"></span>!
@@ -45,6 +45,7 @@
         // Get listing ID from URL
         const urlParams = new URLSearchParams(window.location.search);
         const listingId = urlParams.get('id');
+        let currentListing = null; // Store current listing globally
 
         if (!listingId) {
             window.location.href = '/';
@@ -57,6 +58,7 @@
                 const data = await response.json();
 
                 if (response.ok) {
+                    currentListing = data.listing; // Store for later use
                     displayListing(data.listing);
                 } else {
                     document.getElementById('listingDetail').innerHTML = 
@@ -69,91 +71,237 @@
             }
         }
 
-       function displayListing(listing) {
-    const imagesHtml = listing.images && listing.images.length > 0 
-        ? listing.images.map(img => 
-            `<img src="/uploads/${img}" alt="Book image" class="listing-image-large">`
-          ).join('')
-        : '<p>No images available</p>';
+        function displayListing(listing) {
+            const imagesHtml = listing.images && listing.images.length > 0 
+                ? listing.images.map(img => 
+                    `<img src="/uploads/${img}" alt="Book image" class="listing-image-large">`
+                  ).join('')
+                : '<p>No images available</p>';
 
-    document.getElementById('listingDetail').innerHTML = `
-        <h1>${listing.title}</h1>
-        <p><strong>Author:</strong> ${listing.author}</p>
-        
-        <div class="listing-images">
-            ${imagesHtml}
-        </div>
-        
-        <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 2rem; margin-top: 2rem;">
-            <div>
-                <h3>Description</h3>
-                <p>${listing.description}</p>
-                
-                <div style="margin-top: 1rem;">
-                    <p><strong>Category:</strong> ${listing.category}</p>
-                    <p><strong>Condition:</strong> ${listing.condition}</p>
-                    <p><strong>City:</strong> ${listing.city}</p>
-                    <p><strong>Quantity Available:</strong> ${listing.quantity || 1} copies</p>
-                    ${listing.isbn ? `<p><strong>ISBN:</strong> ${listing.isbn}</p>` : ''}
-                    <p><strong>Posted:</strong> ${new Date(listing.createdAt).toLocaleDateString()}</p>
-                </div>
-            </div>
-            
-            <div>
-                <div class="listing-price">₹${listing.price}</div>
-                
-                <!-- Quantity selector for Add to Cart -->
-                <div class="listing-actions" style="margin-bottom: 1rem;">
-                    <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 1rem;">
-                        <label for="cartQuantity" style="color: #2c3e50 !important; font-weight: 600;">Quantity:</label>
-                        <input type="number" id="cartQuantity" min="1" max="${listing.quantity}" value="1" 
-                               style="width: 80px; padding: 0.5rem; border: 2px solid #ddd; border-radius: 8px; text-align: center;">
+            // Check stock availability
+            const quantity = listing.quantity || 0;
+            const isOutOfStock = quantity === 0;
+            const isLowStock = quantity > 0 && quantity <= 3;
+
+            // Stock status HTML
+            let stockStatusHtml = '';
+            if (isOutOfStock) {
+                stockStatusHtml = '<div style="color: #e74c3c; font-weight: bold; font-size: 1.1rem; margin: 1rem 0; padding: 0.8rem; background: rgba(231, 76, 60, 0.1); border-radius: 8px; border: 2px solid #e74c3c;">❌ OUT OF STOCK</div>';
+            } else if (isLowStock) {
+                stockStatusHtml = `<div style="color: #f39c12; font-weight: bold; font-size: 1.1rem; margin: 1rem 0; padding: 0.8rem; background: rgba(243, 156, 18, 0.1); border-radius: 8px; border: 2px solid #f39c12;">⚠️ Only ${quantity} left in stock!</div>`;
+            } else {
+                stockStatusHtml = `<div style="color: #27ae60; font-weight: bold; font-size: 1rem; margin: 1rem 0; padding: 0.8rem; background: rgba(39, 174, 96, 0.1); border-radius: 8px; border: 2px solid #27ae60;">✓ ${quantity} copies available</div>`;
+            }
+
+            // Add to cart section HTML
+            let addToCartHtml = '';
+            if (isOutOfStock) {
+                addToCartHtml = `
+                    <div style="background: rgba(231, 76, 60, 0.1); padding: 1.5rem; border-radius: 12px; border: 2px solid #e74c3c; margin-bottom: 1rem;">
+                        <p style="color: #c0392b !important; font-weight: 600; margin: 0 0 0.5rem 0;">This book is currently out of stock</p>
+                        <p style="color: #7f8c8d !important; font-size: 0.9rem; margin: 0;">Please check back later or contact the seller for availability</p>
                     </div>
-                    <button class="add-to-cart-btn" onclick="addToCartFromDetail()">
-                        Add to Cart
+                    <button class="add-to-cart-btn" disabled style="opacity: 0.5; cursor: not-allowed; background: #95a5a6 !important;">
+                        Out of Stock - Cannot Add to Cart
                     </button>
+                `;
+            } else {
+                addToCartHtml = `
+                    <div class="listing-actions" style="margin-bottom: 1rem;">
+                        <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 1rem;">
+                            <label for="cartQuantity" style="color: #2c3e50 !important; font-weight: 600;">Quantity:</label>
+                            <input type="number" id="cartQuantity" min="1" max="${quantity}" value="1" 
+                                   style="width: 80px; padding: 0.5rem; border: 2px solid #ddd; border-radius: 8px; text-align: center;">
+                            <span style="color: #7f8c8d !important; font-size: 0.9rem;">(Max: ${quantity})</span>
+                        </div>
+                        <button class="add-to-cart-btn" onclick="addToCartFromDetail()">
+                            Add to Cart
+                        </button>
+                    </div>
+                `;
+            }
+
+            document.getElementById('listingDetail').innerHTML = `
+                <h1>${listing.title}</h1>
+                <p><strong>Author:</strong> ${listing.author}</p>
+                
+                ${stockStatusHtml}
+                
+                <div class="listing-images">
+                    ${imagesHtml}
                 </div>
                 
-                <div class="contact-info">
-                    <h4>Contact Seller</h4>
-                    <p><strong>Seller:</strong> ${listing.sellerId.username}</p>
-                    <p><strong>Phone:</strong> ${listing.sellerContact.phone}</p>
-                    <p><strong>Email:</strong> ${listing.sellerContact.email}</p>
+                <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 2rem; margin-top: 2rem;">
+                    <div>
+                        <h3>Description</h3>
+                        <p>${listing.description}</p>
+                        
+                        <div style="margin-top: 1rem;">
+                            <p><strong>Category:</strong> ${listing.category}</p>
+                            <p><strong>Condition:</strong> ${listing.condition}</p>
+                            <p><strong>City:</strong> ${listing.city}</p>
+                            ${listing.isbn ? `<p><strong>ISBN:</strong> ${listing.isbn}</p>` : ''}
+                            <p><strong>Posted:</strong> ${new Date(listing.createdAt).toLocaleDateString()}</p>
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <div class="listing-price">₹${listing.price}</div>
+                        
+                        ${addToCartHtml}
+                        
+                        <div class="contact-info">
+                            <h4>Contact Seller</h4>
+                            <p><strong>Seller:</strong> ${listing.sellerId.username}</p>
+                            <p><strong>Phone:</strong> ${listing.sellerContact.phone}</p>
+                            <p><strong>Email:</strong> ${listing.sellerContact.email}</p>
+                        </div>
+                        
+                        <div class="upi-info">
+                            <h4>Payment Information</h4>
+                            <p>Pay directly to seller via UPI:</p>
+                            <div class="upi-id">${listing.upiId}</div>
+                            <p style="font-size: 0.9rem; margin-top: 0.5rem; color: #666;">
+                                ${isOutOfStock ? 'Book is currently out of stock.' : 'Verify book condition before payment. PassMyBook is not responsible for transactions.'}
+                            </p>
+                        </div>
+                    </div>
                 </div>
-                
-                <div class="upi-info">
-                    <h4>Payment Information</h4>
-                    <p>Pay directly to seller via UPI:</p>
-                    <div class="upi-id">${listing.upiId}</div>
-                    <p style="font-size: 0.9rem; margin-top: 0.5rem; color: #666;">
-                        Verify book condition before payment. PassMyBook is not responsible for transactions.
-                    </p>
-                </div>
-            </div>
-        </div>
-    `;
-}
-
-
-        // ADD TO CART FUNCTION 
-        function addToCartFromDetail() {
-    const urlParams = new URLSearchParams(window.location.search);
-    const bookId = urlParams.get('id');
-    const selectedQuantity = document.getElementById('cartQuantity').value;
-    
-    if (!bookId) {
-        alert('Book ID missing, cannot add to cart');
-        return;
+            `;
         }
-            // Call the addToCart function from main.js
-           addToCart(bookId, selectedQuantity);
+
+        // FIXED ADD TO CART FUNCTION
+        async function addToCartFromDetail() {
+            // Check if user is logged in first
+            const user = await checkAuthStatus();
+            if (!user) {
+                alert('Please login to add items to cart');
+                window.location.href = '/login.html';
+                return;
+            }
+
+            if (!currentListing) {
+                showNotification('Error: Book information not loaded', 'error');
+                return;
+            }
+
+            // Check stock availability
+            if (currentListing.quantity === 0) {
+                showNotification('This book is out of stock', 'error');
+                return;
+            }
+
+            const quantityInput = document.getElementById('cartQuantity');
+            if (!quantityInput) {
+                showNotification('Error: Quantity input not found', 'error');
+                return;
+            }
+
+            let selectedQuantity = parseInt(quantityInput.value);
+            
+            // Validate quantity
+            if (isNaN(selectedQuantity) || selectedQuantity < 1) {
+                selectedQuantity = 1;
+                quantityInput.value = 1;
+            }
+
+            if (selectedQuantity > currentListing.quantity) {
+                showNotification(`Only ${currentListing.quantity} copies available`, 'error');
+                quantityInput.value = currentListing.quantity;
+                return;
+            }
+
+            // Add to cart
+            try {
+                const response = await fetch('/api/cart/add', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ 
+                        bookId: currentListing._id, 
+                        quantity: selectedQuantity 
+                    })
+                });
+
+                const result = await response.json();
+
+                if (response.ok) {
+                    showNotification(`${selectedQuantity} book(s) added to cart!`, 'success');
+                    updateCartCount(result.totalItems);
+                } else {
+                    showNotification(result.error || 'Failed to add to cart', 'error');
+                }
+            } catch (error) {
+                console.error('Add to cart error:', error);
+                showNotification('Error adding to cart', 'error');
+            }
         }
+
+        // Notification function
+        function showNotification(message, type = 'info') {
+            // Remove existing notifications
+            document.querySelectorAll('.notification').forEach(notif => notif.remove());
+
+            const notification = document.createElement('div');
+            notification.className = `notification ${type}`;
+            notification.textContent = message;
+            notification.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                padding: 1rem 2rem;
+                border-radius: 15px;
+                color: white;
+                font-weight: bold;
+                z-index: 1000;
+                background: ${type === 'success' ? 'rgba(38, 222, 129, 0.9)' : 'rgba(231, 76, 60, 0.9)'};
+                box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+                animation: slideIn 0.3s ease-out;
+            `;
+
+            document.body.appendChild(notification);
+
+            setTimeout(() => {
+                notification.style.animation = 'slideOut 0.3s ease-out';
+                setTimeout(() => {
+                    if (notification.parentNode) {
+                        notification.remove();
+                    }
+                }, 300);
+            }, 3000);
+        }
+
         // Initialize
         document.addEventListener('DOMContentLoaded', () => {
             checkAuthStatus();
             loadListingDetails();
-            updateCartCount(); // Load cart count
+            updateCartCount();
         });
     </script>
+
+    <style>
+        @keyframes slideIn {
+            from {
+                transform: translateX(400px);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        @keyframes slideOut {
+            from {
+                transform: translateX(0);
+                opacity: 1;
+            }
+            to {
+                transform: translateX(400px);
+                opacity: 0;
+            }
+        }
+    </style>
 </body>
 </html>

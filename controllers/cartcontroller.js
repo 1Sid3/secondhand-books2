@@ -12,7 +12,18 @@ const addToCart = async (req, res) => {
       return res.status(404).json({ error: "Book not found" })
     }
 
-    const requestedQuantity = Number.parseInt(quantity)
+    const requestedQuantity = parseInt(quantity)
+
+    // CRITICAL: Check if book is out of stock
+    if (book.quantity === 0) {
+      return res.status(400).json({
+        error: "Book is out of stock",
+        message: `${book.title} is currently unavailable. Stock quantity is 0.`,
+        availableQuantity: 0,
+      })
+    }
+
+    // Check if requested quantity exceeds available stock
     if (requestedQuantity > book.quantity) {
       return res.status(400).json({
         error: `Only ${book.quantity} unit(s) available. Cannot add ${requestedQuantity} to cart.`,
@@ -35,6 +46,8 @@ const addToCart = async (req, res) => {
 
     if (existingItemIndex > -1) {
       const newTotalQuantity = cart.items[existingItemIndex].quantity + requestedQuantity
+
+      // Validate total quantity in cart doesn't exceed available stock
       if (newTotalQuantity > book.quantity) {
         return res.status(400).json({
           error: `Only ${book.quantity} unit(s) available. Current cart has ${cart.items[existingItemIndex].quantity}, cannot add ${requestedQuantity} more.`,
@@ -42,6 +55,7 @@ const addToCart = async (req, res) => {
           currentQuantity: cart.items[existingItemIndex].quantity,
         })
       }
+
       cart.items[existingItemIndex].quantity = newTotalQuantity
       cart.items[existingItemIndex].total = cart.items[existingItemIndex].quantity * cart.items[existingItemIndex].price
     } else {
@@ -75,7 +89,7 @@ const getCart = async (req, res) => {
   try {
     const userId = req.session.userId
 
-    const cart = await Cart.findOne({ userId }).populate("items.bookId", "title author price images city condition")
+    const cart = await Cart.findOne({ userId }).populate("items.bookId", "title author price images city condition quantity")
 
     if (!cart) {
       return res.status(200).json({
@@ -83,6 +97,35 @@ const getCart = async (req, res) => {
         totalPrice: 0,
         totalItems: 0,
       })
+    }
+
+    // Filter out items where the book is now out of stock or has insufficient quantity
+    const validItems = cart.items.filter(item => {
+      if (!item.bookId) return false
+      const availableQuantity = item.bookId.quantity || 0
+      
+      // If book is out of stock or cart quantity exceeds available, remove from cart
+      if (availableQuantity === 0) {
+        console.log(`Removing out of stock item: ${item.bookId.title}`)
+        return false
+      }
+      
+      // If cart has more than available, adjust quantity
+      if (item.quantity > availableQuantity) {
+        console.log(`Adjusting quantity for ${item.bookId.title}: ${item.quantity} -> ${availableQuantity}`)
+        item.quantity = availableQuantity
+        item.total = item.quantity * item.price
+      }
+      
+      return true
+    })
+
+    // Update cart if items were filtered
+    if (validItems.length !== cart.items.length) {
+      cart.items = validItems
+      cart.totalPrice = cart.items.reduce((total, item) => total + item.total, 0)
+      cart.totalItems = cart.items.reduce((total, item) => total + item.quantity, 0)
+      await cart.save()
     }
 
     res.status(200).json(cart)
@@ -113,7 +156,24 @@ const updateCartItem = async (req, res) => {
       return res.status(404).json({ error: "Book not found" })
     }
 
-    const newQuantity = Number.parseInt(quantity)
+    // Check if book is out of stock
+    if (book.quantity === 0) {
+      // Remove item from cart if out of stock
+      cart.items.splice(itemIndex, 1)
+      cart.totalPrice = cart.items.reduce((total, item) => total + item.total, 0)
+      cart.totalItems = cart.items.reduce((total, item) => total + item.quantity, 0)
+      await cart.save()
+
+      return res.status(400).json({
+        error: `${book.title} is now out of stock and has been removed from your cart.`,
+        availableQuantity: 0,
+        cart,
+      })
+    }
+
+    const newQuantity = parseInt(quantity)
+
+    // Validate new quantity against available stock
     if (newQuantity > book.quantity) {
       return res.status(400).json({
         error: `Only ${book.quantity} unit(s) available for this book.`,
@@ -170,6 +230,7 @@ const removeFromCart = async (req, res) => {
     })
   } catch (error) {
     console.error("Remove from cart error:", error)
+    res.status(500).json({ error: "Error removing item from cart" })
   }
 }
 
@@ -187,6 +248,7 @@ const clearCart = async (req, res) => {
     })
   } catch (error) {
     console.error("Clear cart error:", error)
+    res.status(500).json({ error: "Error clearing cart" })
   }
 }
 
